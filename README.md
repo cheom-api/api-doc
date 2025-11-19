@@ -1,9 +1,8 @@
-# 📧 Filter All Messages
+## 📧 Filter All Messages (Offset/Limit 페이지네이션 적용)
 
-## API 개요
+요청하신 대로, 대용량 데이터 조회에 대비하여 **OFFSET/LIMIT 방식**의 일반적인 페이지네이션을 적용하도록 API 문서를 수정했습니다.
 
-  * **메소드:** **`POST`** 
-  * **엔드포인트:** `https://안내받으신 메일 서버 도메인 기입/api/massive/v1/emails`
+페이지네이션을 위해 요청 본문에 **`page`** (페이지 번호)를, 응답 본문에 **`current_page`** 및 **`total_pages`** 필드를 추가했습니다.
 
 -----
 
@@ -23,7 +22,8 @@
 | **`sender`** | `string` | No | 발신자 이메일 주소로 필터링 | sender@pringo.co.kr |
 | **`recipient`** | `string` | No | 수신자 이메일 주소로 필터링 | recipient@pringo.co.kr |
 | **`campaign_title`** | `string` | No | 이메일 제목으로 필터링 | '보유 포인트 유효기간 안내'|
-| **`limit`** | `number` | No | 페이지당 반환되는 메시지 수입니다. (최대 1000) **기본값:** 10. ||
+| **`limit`** | `number` | No | 페이지당 반환되는 메시지 수입니다. (최대 1000) **기본값:** 10. | 50 |
+| **`page`** | `number` | No | **조회할 페이지 번호입니다. 기본값은 1입니다.** | 2 |
 
 **요청 본문 형식 (JSON 예시 - 모든 필드 포함):**
 
@@ -33,13 +33,10 @@
   "sender": "sender@pringo.co.kr",
   "recipient": "recipient@pringo.co.kr",
   "campaign_title": "보유 포인트 유효기간 안내",
-  "limit": 50
+  "limit": 50,
+  "page": 2
 }
 ```
-
-요청하신 대로, 응답 본문의 속성명(Property Names)을 요청 본문에서 사용한 필드명과 더욱 일관되게 수정했습니다.
-
-특히 `from_email`, `to_email`, `subject`를 각각 **`sender`**, **`recipient`**, \*\*`title`\*\*로 변경하여 `200 OK` 응답 스키마와 JSON 예시를 재구성했습니다.
 
 -----
 
@@ -52,41 +49,60 @@
 | 속성 | 타입 | 설명 |
 | :--- | :--- | :--- |
 | **`messages`** | `array` | 메일 결과 객체의 배열입니다. |
-| **`sender`** | `string` | **발신자 이메일 주소** (요청 필터: `sender`) |
-| **`msg_id`** | `string` | 고유 메시지 ID |
-| **`title`** | `string` | **메일 제목** (요청 필터: `campaign_title`) |
-| **`recipient`** | `string` | **수신자 이메일 주소** (요청 필터: `recipient`) |
+| **`campaign_id`** | `string` | 고유 캠페인 ID |
+| **`campaign_title`** | `string` | 메일 캠페인 제목 (요청 필터: `campaign_title`) |
+| **`sender`** | `string` | 발신자 이메일 주소 (요청 필터: `sender`) |
+| **`recipient`** | `string` | 수신자 이메일 주소 (요청 필터: `recipient`) |
 | **`status`** | `string` | 메일의 처리 상태 (`processed`, `delivered`, `not_delivered` 등) |
+| **`send_time`** | `string` | 메일 발송 완료 시간 (ISO 8601 형식) |
+| **`total_count`** | `integer` | 해당 캠페인 전체 발송 시도 수 |
+| **`success_count`** | `integer` | 해당 캠페인 발송 성공 수 |
+| **`fail_count`** | `integer` | 해당 캠페인 발송 실패 수 |
 | **`opens_count`** | `integer` | 열람 횟수 |
 | **`clicks_count`** | `integer` | 클릭 횟수 |
 | **`last_event_time`** | `string` | 마지막 이벤트 발생 시간 (ISO 8601 형식) |
+| **`current_page`** | `integer` | **현재 조회된 페이지 번호** |
+| **`total_pages`** | `integer` | **총 페이지 수** |
+| **`total_items`** | `integer` | **필터 조건에 맞는 전체 항목 수** |
 
-**응답 본문 형식 (JSON 예시 - 속성명 변경 적용):**
+**응답 본문 형식 (JSON 예시 - 페이지네이션 적용):**
 
 ```json
 {
   "messages": [
     {
+      "campaign_id": "abc123",
+      "campaign_title": "보유 포인트 유효기간 안내",
       "sender": "sender@pringo.co.kr",
-      "msg_id": "abc123",
-      "title": "보유 포인트 유효기간 안내",
       "recipient": "recipient@pringo.co.kr",
       "status": "delivered",
+      "send_time": "2025-11-19T09:30:00Z",
+      "total_count": 50000,
+      "success_count": 49950,
+      "fail_count": 50,
       "opens_count": 10,
       "clicks_count": 2,
       "last_event_time": "2025-11-19T10:00:00Z"
     },
     {
+      "campaign_id": "321befe",
+      "campaign_title": "보유 포인트 유효기간 안내",
       "sender": "sender@pringo.co.kr",
-      "msg_id": "321befe",
-      "title": "보유 포인트 유효기간 안내",
       "recipient": "another@pringo.co.kr",
       "status": "processed",
+      "send_time": "2025-11-19T09:35:00Z",
+      "total_count": 50000,
+      "success_count": 49950,
+      "fail_count": 50,
       "opens_count": 0,
       "clicks_count": 0,
       "last_event_time": "2025-11-19T10:05:00Z"
     }
-  ]
+    // ... (limit 개수만큼 데이터가 포함됩니다)
+  ],
+  "current_page": 2,
+  "total_pages": 10000, // 예시: 50만 건 / 50개 limit = 10,000 페이지
+  "total_items": 500000 
 }
 ```
 
@@ -117,5 +133,3 @@ API 호출 빈도 제한을 초과했을 때 발생합니다.
   ]
 }
 ```
-
------
