@@ -1,9 +1,5 @@
-## 📧 Filter All Messages (Offset/Limit 페이지네이션 적용)
-
-요청하신 대로, 대용량 데이터 조회에 대비하여 **OFFSET/LIMIT 방식**의 일반적인 페이지네이션을 적용하도록 API 문서를 수정했습니다.
-
-페이지네이션을 위해 요청 본문에 **`page`** (페이지 번호)를, 응답 본문에 **`current_page`** 및 **`total_pages`** 필드를 추가했습니다.
-
+## 📧 Filter All Campagins
+대량메일 결과 조회 api
 -----
 
 ## ⚙️ 요청 상세 정보 (Custom Operation Details)
