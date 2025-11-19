@@ -37,6 +37,9 @@
 }
 ```
 
+요청하신 대로, 응답 본문의 속성명(Property Names)을 요청 본문에서 사용한 필드명과 더욱 일관되게 수정했습니다.
+
+특히 `from_email`, `to_email`, `subject`를 각각 **`sender`**, **`recipient`**, \*\*`title`\*\*로 변경하여 `200 OK` 응답 스키마와 JSON 예시를 재구성했습니다.
 
 -----
 
@@ -49,39 +52,39 @@
 | 속성 | 타입 | 설명 |
 | :--- | :--- | :--- |
 | **`messages`** | `array` | 메일 결과 객체의 배열입니다. |
-| **`from_email`** | `string` | 발신자 이메일 주소 |
+| **`sender`** | `string` | **발신자 이메일 주소** (요청 필터: `sender`) |
 | **`msg_id`** | `string` | 고유 메시지 ID |
-| **`subject`** | `string` | 메일 제목 |
-| **`to_email`** | `string` | 수신자 이메일 주소 |
+| **`title`** | `string` | **메일 제목** (요청 필터: `campaign_title`) |
+| **`recipient`** | `string` | **수신자 이메일 주소** (요청 필터: `recipient`) |
 | **`status`** | `string` | 메일의 처리 상태 (`processed`, `delivered`, `not_delivered` 등) |
 | **`opens_count`** | `integer` | 열람 횟수 |
 | **`clicks_count`** | `integer` | 클릭 횟수 |
 | **`last_event_time`** | `string` | 마지막 이벤트 발생 시간 (ISO 8601 형식) |
 
-**응답 본문 형식 (JSON 예시):**
+**응답 본문 형식 (JSON 예시 - 속성명 변경 적용):**
 
 ```json
 {
   "messages": [
     {
-      "from_email": "from@test.com",
+      "sender": "sender@pringo.co.kr",
       "msg_id": "abc123",
-      "subject": "something profound",
-      "to_email": "to@test.com",
+      "title": "보유 포인트 유효기간 안내",
+      "recipient": "recipient@pringo.co.kr",
+      "status": "delivered",
+      "opens_count": 10,
+      "clicks_count": 2,
+      "last_event_time": "2025-11-19T10:00:00Z"
+    },
+    {
+      "sender": "sender@pringo.co.kr",
+      "msg_id": "321befe",
+      "title": "보유 포인트 유효기간 안내",
+      "recipient": "another@pringo.co.kr",
       "status": "processed",
       "opens_count": 0,
       "clicks_count": 0,
-      "last_event_time": "2017-10-13T18:56:21Z"
-    },
-    {
-      "from_email": "yeah@test.com",
-      "msg_id": "321befe",
-      "subject": "something profound",
-      "to_email": "nah@test.com",
-      "status": "delivered",
-      "opens_count": 500,
-      "clicks_count": 200,
-      "last_event_time": "2017-10-13T18:56:21Z"
+      "last_event_time": "2025-11-19T10:05:00Z"
     }
   ]
 }
@@ -114,21 +117,5 @@ API 호출 빈도 제한을 초과했을 때 발생합니다.
   ]
 }
 ```
+
 -----
-
-## 💻 코드 예시 (Custom POST Body 요청)
-
-추가된 필터링 조건을 포함한 **POST** 요청 예시입니다.
-
-### cURL (POST 요청 본문 포함)
-
-curl --location 'https://안내받으신 메일 서버 도메인 기입/api/massive/v1/emails' \
---header 'Content-Type: application/json' \
---data '{
-    "api_key": "dfd6fd9fsdfbjdnfkd38fndjfd023",
-    "sender": "sender@pringo.co.kr",
-    "recipient": "recipient@pringo.co.kr",
-    "campaign_title": "보유 포인트 유효기간 안내",
-    "limit": 50
-}'
-
