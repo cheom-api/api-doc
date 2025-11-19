@@ -55,6 +55,3 @@ curl --location 'https://안내받으신 메일 서버 도메인 기입/api/mass
     "limit": 50
 }'
 
------
-
-이 외에 메시지 ID(`msg_id`)나 날짜/시간 필터링(`last_event_time`) 등 다른 필드도 추가로 구성할까요?
